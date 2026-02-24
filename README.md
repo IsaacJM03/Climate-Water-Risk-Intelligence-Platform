@@ -127,8 +127,8 @@ If you have Docker available, the quickest way:
 docker run -d --name climate_mysql \
   -e MYSQL_ROOT_PASSWORD=rootpassword \
   -e MYSQL_DATABASE=climate_db \
-  -e MYSQL_USER=climate_user \
-  -e MYSQL_PASSWORD=climate_pass \
+  -e MYSQL_USER=root \
+  -e MYSQL_PASSWORD=root \
   -p 3306:3306 mysql:8.0
 
 docker run -d --name climate_redis -p 6379:6379 redis:7-alpine
@@ -141,7 +141,7 @@ Or install and start them natively via your OS package manager.
 Edit `.env` (copy from `.env.example`) and set `DATABASE_URL` to point to your local MySQL:
 
 ```
-DATABASE_URL=mysql+aiomysql://climate_user:climate_pass@localhost:3306/climate_db
+DATABASE_URL=mysql+aiomysql://root:root@localhost:3306/climate_db
 REDIS_URL=redis://localhost:6379/0
 SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
 APP_ENV=development
@@ -248,7 +248,7 @@ cp .env.example .env
 Minimum required changes in `.env`:
 
 ```
-DATABASE_URL=mysql+aiomysql://climate_user:climate_pass@db:3306/climate_db
+DATABASE_URL=mysql+aiomysql://root:root@db:3306/climate_db
 REDIS_URL=redis://redis:6379/0
 SECRET_KEY=<generate: python -c "import secrets; print(secrets.token_hex(32))">
 APP_ENV=production
@@ -434,7 +434,7 @@ Tests use an in-memory SQLite database. No MySQL or Redis instance required.
 ## Production Hardening Checklist
 
 - [ ] **Rotate `SECRET_KEY`** — generate with `python -c "import secrets; print(secrets.token_hex(32))"`
-- [ ] **Use strong DB password** — replace `climate_pass` with a generated secret
+- [ ] **Use strong DB password** — replace `root` with a generated secret
 - [ ] **TLS/HTTPS** — terminate SSL at a reverse proxy (Nginx, Caddy, or cloud LB) in front of the services
 - [ ] **Restrict CORS** — update `_ALLOWED_ORIGINS` in `app/main.py` to your real domain only
 - [ ] **Rate limiting** — add an Nginx or API gateway rate limit on `/api/v1/readings`

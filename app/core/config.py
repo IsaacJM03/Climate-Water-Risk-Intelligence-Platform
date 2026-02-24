@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+from urllib.parse import quote_plus
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "mysql+aiomysql://climate_user:climate_pass@localhost:3306/climate_db"
+    # Low-level DB connection components — prefer these for local setups
+    DB_USER: str = "climate_user"
+    DB_PASSWORD: str = "S3cureP4ssw0rd2026!"
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 3306
+    DB_NAME: str = "climate_db"
+
+    # Full URL may be provided directly; if omitted we build it from components
+    DATABASE_URL: str | None = None
+
     REDIS_URL: str = "redis://localhost:6379/0"
     SECRET_KEY: str = "change-this-to-a-long-random-secret-key"
     ALGORITHM: str = "HS256"
@@ -16,6 +26,14 @@ class Settings(BaseSettings):
     APP_ENV: str = "production"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        if not self.DATABASE_URL:
+            password = quote_plus(self.DB_PASSWORD)
+            self.DATABASE_URL = (
+                f"mysql+aiomysql://{self.DB_USER}:{password}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            )
 
 
 settings = Settings()

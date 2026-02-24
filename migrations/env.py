@@ -4,8 +4,12 @@ import asyncio
 import os
 from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
+
+# Load project .env so DATABASE_URL is available to Alembic when run from the shell
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Import all models so Alembic metadata is populated
 from app.models import *  # noqa: F401, F403
@@ -22,7 +26,17 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
+    # Prefer explicit DATABASE_URL env; fall back to alembic.ini; finally try app settings
     url = os.environ.get("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+    if not url:
+        try:
+            # Import settings lazily (avoid import-time DB side-effects)
+            from app.core.config import settings
+
+            url = settings.DATABASE_URL
+        except Exception:
+            url = None
+
     if url is None:
         raise RuntimeError("DATABASE_URL not set")
     return url
