@@ -56,6 +56,7 @@ app = FastAPI(
 _ALLOWED_ORIGINS = [
     "https://app.climaterisk.example.com",
     "http://localhost:3000",
+    "http://localhost:5173",  # Vite dev server
     "http://localhost:8080",
 ]
 
