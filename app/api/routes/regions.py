@@ -4,7 +4,7 @@ import json
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -153,13 +153,14 @@ async def get_region_forecast(
 @router.delete(
     "/{region_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     dependencies=[Depends(require_role("admin"))],
 )
 async def delete_region(
     region_id: int,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
-) -> None:
+) -> Response:
     result = await db.execute(
         select(Region).where(
             and_(
@@ -172,3 +173,5 @@ async def delete_region(
     if region is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Region not found")
     await db.delete(region)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
